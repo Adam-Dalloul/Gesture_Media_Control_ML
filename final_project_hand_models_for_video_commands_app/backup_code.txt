@@ -1,0 +1,97 @@
+import cv2
+import numpy as np
+import pyautogui
+import tkinter as tk
+from PIL import Image, ImageTk
+from keras.models import load_model
+import time
+
+# Load the trained Keras model
+model = load_model('keras_model.h5')
+
+# Load labels from the labels file using utf-8 encoding
+with open('labels.txt', encoding='utf-8') as f:
+    gesture_labels = {int(line.split()[0]): ' '.join(line.split()[1:]) for line in f}
+
+# Initialize camera
+cap = cv2.VideoCapture(0)
+
+# Create image canvas to display camera feed
+root = tk.Tk()
+root.title('Gesture Control Application')
+canvas = tk.Canvas(root, width=640, height=480)
+canvas.pack()
+
+# Set the delay in seconds
+ACTION_DELAY = 2  # Adjust as needed
+
+# Keep track of the last action time
+last_action_time = time.time()
+
+# Function to perform action based on gesture label
+def perform_action(gesture_label):
+    global last_action_time
+    
+    # Check if enough time has passed since the last action
+    current_time = time.time()
+    if current_time - last_action_time >= ACTION_DELAY:
+        if gesture_label == '✋🤚🖐Unpause/Pause Video':
+            pyautogui.press('space')
+        elif gesture_label == '👈Rewind Video Backward':
+            pyautogui.press('left')
+        elif gesture_label == '👉Skip Video Forward':
+            pyautogui.press('right')
+        elif gesture_label == '👆Volume Up':
+            pyautogui.press('up')
+        elif gesture_label == '👇Volume Down':
+            pyautogui.press('down')
+        
+        # Update the last action time
+        last_action_time = current_time 
+
+
+# Placeholder for the preprocessing function (replace with actual preprocessing)
+def preprocess(frame):
+    resized_frame = cv2.resize(frame, (224, 224))
+    normalized_frame = resized_frame / 255.0
+    return normalized_frame
+
+# Function to update camera feed on canvas
+def update_camera_feed():
+    ret, frame = cap.read()
+    
+    # Preprocess the frame
+    preprocessed_frame = preprocess(frame)
+    
+    # Perform inference using the loaded model
+    preprocessed_frame = np.expand_dims(preprocessed_frame, axis=0)
+    prediction = model.predict(preprocessed_frame)
+    predicted_class = np.argmax(prediction)
+    gesture_label = gesture_labels[predicted_class]
+    
+    # Perform the associated action
+    perform_action(gesture_label)
+    
+    # Print the predicted gesture label
+    print("Predicted Gesture:", gesture_label)
+
+    # Display the frame on the canvas
+    img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    img = Image.fromarray(img)
+    img = ImageTk.PhotoImage(image=img)
+    
+    canvas.create_image(0, 0, anchor=tk.NW, image=img)
+    canvas.image = img
+    
+    # Continue updating the camera feed
+    canvas.after(10, update_camera_feed)
+
+# Start updating the camera feed
+update_camera_feed()
+
+# Run the application
+root.mainloop()
+
+# Release resources
+cap.release()
+cv2.destroyAllWindows()
