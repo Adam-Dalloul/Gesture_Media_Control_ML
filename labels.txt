@@ -1,0 +1,6 @@
+0 👈Rewind Video Backward
+1 👉Skip Video Forward
+2 👆Volume Up
+3 👇Volume Down
+4 ❌N/A - Command Not Recognized
+5 ✋🤚🖐Unpause/Pause Video
