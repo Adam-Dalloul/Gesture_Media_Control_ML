@@ -2,16 +2,31 @@ import cv2
 import numpy as np
 import pyautogui
 import tkinter as tk
+from tkinter import filedialog
 from PIL import Image, ImageTk
 from keras.models import load_model
 import time
 
-# Load the trained Keras model
-model = load_model('keras_model.h5')
+# Global variables to store the model and gesture labels
+model = None
+gesture_labels = {}
 
-# Load labels from the labels file using utf-8 encoding
-with open('labels.txt', encoding='utf-8') as f:
-    gesture_labels = {int(line.split()[0]): ' '.join(line.split()[1:]) for line in f}
+# Function to load the Keras model
+def load_keras_model():
+    global model
+    file_path = filedialog.askopenfilename(filetypes=[("H5 files", "*.h5")])
+    if file_path:
+        model = load_model(file_path)
+        print(f"Model loaded from {file_path}")
+
+# Function to load the labels file
+def load_labels_file():
+    global gesture_labels
+    file_path = filedialog.askopenfilename(filetypes=[("Text files", "*.txt")])
+    if file_path:
+        with open(file_path, encoding='utf-8') as f:
+            gesture_labels = {int(line.split()[0]): ' '.join(line.split()[1:]) for line in f}
+        print(f"Labels loaded from {file_path}")
 
 # Initialize camera
 cap = cv2.VideoCapture(0)
@@ -75,24 +90,25 @@ def preprocess(frame):
     normalized_frame = resized_frame / 255.0
     return normalized_frame
 
-# Create buttons for each gesture action
-action_buttons = []
-for gesture_idx, gesture_label in gesture_labels.items():
-    emoji_label = ' '.join([emo for emo in gesture_label.split()])
-    button = tk.Button(root, text=emoji_label, command=lambda idx=gesture_idx: perform_action(gesture_labels[idx]))
-    action_buttons.append(button)
-    button.pack()
-
-# Create a label to display predicted gesture
-predicted_label = tk.Label(root, text='Predicted Gesture: N/A')
-predicted_label.pack()
-
-# Create image canvas to display camera feed
-canvas = tk.Canvas(root, width=640, height=480)
-canvas.pack()
-
 # Function to update camera feed on canvas
 def update_camera_feed():
+    global model, gesture_labels
+    if model is None:
+        # If no model is loaded, ask the user to select one
+        load_keras_model()
+        if model is None:
+            # If user cancels model selection, terminate the application
+            root.quit()
+            return
+    
+    if not gesture_labels:
+        # If no labels are loaded, ask the user to select a labels file
+        load_labels_file()
+        if not gesture_labels:
+            # If user cancels labels file selection, terminate the application
+            root.quit()
+            return
+
     ret, frame = cap.read()
     
     # Preprocess the frame
@@ -102,7 +118,7 @@ def update_camera_feed():
     preprocessed_frame = np.expand_dims(preprocessed_frame, axis=0)
     prediction = model.predict(preprocessed_frame)
     predicted_class = np.argmax(prediction)
-    gesture_label = gesture_labels[predicted_class]
+    gesture_label = gesture_labels.get(predicted_class, 'Unknown Gesture')
     
     # Perform the associated action
     perform_action(gesture_label)
@@ -124,6 +140,39 @@ def update_camera_feed():
     # Print predicted gesture
     print("Predicted Gesture:", gesture_label)
 
+# Create buttons for each gesture action (initially empty)
+action_buttons = []
+
+# Function to update the action buttons based on loaded labels
+def update_action_buttons():
+    global action_buttons, gesture_labels
+    # Remove existing buttons
+    for button in action_buttons:
+        button.pack_forget()
+    action_buttons = []
+    
+    # Create buttons for each gesture action
+    for gesture_idx, gesture_label in gesture_labels.items():
+        emoji_label = ' '.join([emo for emo in gesture_label.split()])
+        button = tk.Button(root, text=emoji_label, command=lambda idx=gesture_idx: perform_action(gesture_labels[idx]))
+        action_buttons.append(button)
+        button.pack()
+
+# Create a label to display predicted gesture
+predicted_label = tk.Label(root, text='Predicted Gesture: N/A')
+predicted_label.pack()
+
+# Create image canvas to display camera feed
+canvas = tk.Canvas(root, width=640, height=480)
+canvas.pack()
+
+# Button to load the model file
+load_model_button = tk.Button(root, text="Load Keras Model", command=load_keras_model)
+load_model_button.pack()
+
+# Button to load the labels file
+load_labels_button = tk.Button(root, text="Load Labels File", command=load_labels_file)
+load_labels_button.pack()
 
 # Start updating the camera feed
 update_camera_feed()
