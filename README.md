@@ -56,8 +56,9 @@ source venv/bin/activate  # On Windows, use `venv\Scripts\activate`</code></pre>
 <h2>Example</h2>
 <p>Below is an example of how to use the application:</p>
 <ol>
-  <li>Click "Load Keras Model" and select your model file.</li>
-  <li>Click "Load Labels File" and select your labels file.</li>
+  <li>*Please be patient and wait for the application to open and load everything, it may take time*</li>
+  <li>Click "Load Keras Model" and select your model file. (should happen on application start)</li>
+  <li>Click "Load Labels File" and select your labels file. (should happen on application start)</li>
   <li>The application will display the camera feed and recognize gestures.</li>
 </ol>
 
@@ -79,10 +80,10 @@ source venv/bin/activate  # On Windows, use `venv\Scripts\activate`</code></pre>
 <p>Feel free to fork the repository and submit pull requests. For significant changes, please open an issue to discuss them first.</p>
 
 <h2>License</h2>
-<p>This project is licensed under the MIT License - see the <a href="LICENSE">LICENSE</a> file for details.</p>
+<p>This project is licensed under the MIT License</p>
 
 <h2>Contact</h2>
-<p>For any questions or feedback, please reach out to <a href="mailto:ad@adamdalloul.com">your-email@example.com</a>.</p>
+<p>For any questions or feedback, please reach out to <a href="mailto:ad@adamdalloul.com">ad@adamdalloul.com</a>.</p>
 
 <hr/>
 
