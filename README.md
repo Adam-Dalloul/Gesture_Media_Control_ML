@@ -1,6 +1,6 @@
 
 <h1>Gesture Control Application</h1>
-<p>Welcome to the Gesture Control Application! This application uses a Keras model to recognize gestures from your webcam feed and perform actions based on those gestures. You can dynamically load the Keras model and labels file using the application's graphical interface.</p>
+<p>Welcome to the Gesture Control Application! This application uses a Keras model to recognize gestures from your webcam feed and perform actions based on those gestures. You can dynamically load the Keras model and labels file using the application's graphical interface. Can be used for who are blind and don't have access to assitive technology but still need to use desktops/computers.</p>
 
 <h2>Features</h2>
 <ul>
